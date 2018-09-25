@@ -56,7 +56,7 @@ def select_mustache_overlay():
 def main():
     global baseDataPath
     # location of OpenCV Haar Cascade Classifiers:
-    baseDataPath = "/root/stashorizer"
+    baseDataPath = "/root/stashorizer/"
 
     # xml files describing our haar cascade classifiers
     faceCascadeFilePath = baseDataPath + "haarcascade_frontalface_default.xml"
@@ -66,7 +66,7 @@ def main():
     faceCascade = cv2.CascadeClassifier(faceCascadeFilePath)
     noseCascade = cv2.CascadeClassifier(noseCascadeFilePath)
 
-    # Capture video feed
+    print("opening image " + baseDataPath + "image_raw.jpg")
     frame = cv2.imread(baseDataPath + "image_raw.jpg", -1)
     frame, scale = resize(frame.copy(), 600, 1000)
 

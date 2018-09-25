@@ -7,7 +7,7 @@ original tweet with that mustache annotated image.
 # BUILD
 
 ```
-docker build -t stashorizer .
+docker build -t stashorizer:latest .
 ```
 
 # USAGE:
