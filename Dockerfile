@@ -1,6 +1,6 @@
 FROM dymat/opencv:latest
 
-WORKDIR /root/stashorizer
+WORKDIR /root/
 RUN apt-get update && \
 	apt-get upgrade -y && \
 	apt-get install -y --no-install-recommends git python-setuptools && \
