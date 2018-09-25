@@ -66,10 +66,12 @@ def validate_env():
 # Detects unsafe features in an image file located on the Web.
 def detect_safe_search_uri(uri):
     logger.debug("authenticating to google cloud")
+    # Instantiates GCP client
     client = vision.ImageAnnotatorClient()
     image = vision.types.Image()
     image.source.image_uri = uri
 
+    # Performs label detection on the image file
     response = client.safe_search_detection(image=image)
     safe = response.safe_search_annotation
 
