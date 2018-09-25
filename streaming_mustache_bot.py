@@ -65,6 +65,7 @@ def validate_env():
 
 # Detects unsafe features in an image file located on the Web.
 def detect_safe_search_uri(uri):
+    logger.debug("authenticating to google cloud")
     client = vision.ImageAnnotatorClient()
     image = vision.types.Image()
     image.source.image_uri = uri
@@ -183,6 +184,7 @@ def main():
     access_key = os.environ.get('TW_ACCESS_TOKEN')
     access_secret = os.environ.get('TW_ACCESS_TOKEN_SECRET')
 
+    logger.debug("authenticating to twitter")
     auth = OAuthHandler(consumer_key, consumer_secret)
     auth.set_access_token(access_key, access_secret)
     stream_listener = SListener()
