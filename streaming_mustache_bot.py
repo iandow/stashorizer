@@ -138,8 +138,8 @@ class SListener(StreamListener):
             if raw_image_exists:
                 logger.info("Applying mustache to image")
 
-                os.system('docker run --rm -e ./.env -e DISPLAY=$DISPLAY -v /Users/idownard/development/stashorizer:/data dymat/opencv python /data/mustache_maker.py')
-                #mustache_maker.main()
+                #os.system('docker run --rm -e ./.env -e DISPLAY=$DISPLAY -v /Users/idownard/development/stashorizer:/data dymat/opencv python /data/mustache_maker.py')
+                mustache_maker.main()
 
                 annotated_image_exists = os.path.isfile('image_annotated.jpg')
                 if annotated_image_exists:
