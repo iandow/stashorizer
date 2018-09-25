@@ -56,7 +56,7 @@ def select_mustache_overlay():
 def main():
     global baseDataPath
     # location of OpenCV Haar Cascade Classifiers:
-    baseDataPath = "/data/"
+    baseDataPath = "./"
 
     # xml files describing our haar cascade classifiers
     faceCascadeFilePath = baseDataPath + "haarcascade_frontalface_default.xml"
