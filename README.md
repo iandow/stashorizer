@@ -7,6 +7,7 @@ original tweet with that mustache annotated image.
 # BUILD
 
 ```
+git push -u origin master
 docker build -t stashorizer:latest .
 docker push iandow/stashorizer
 ```
