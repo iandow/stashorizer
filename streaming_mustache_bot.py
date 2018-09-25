@@ -134,25 +134,25 @@ class SListener(StreamListener):
                 return
             logger.info("downloading image " + media[0]['media_url'])
             media_url = media[0]['media_url']
-            wget.download(media_url, 'image_raw.jpg')
-            raw_image_exists = os.path.isfile('image_raw.jpg')
+            wget.download(media_url, '/root/stashorizer/image_raw.jpg')
+            raw_image_exists = os.path.isfile('/root/stashorizer/image_raw.jpg')
             if raw_image_exists:
                 logger.info("Applying mustache to image")
 
                 #os.system('docker run --rm -e ./.env -e DISPLAY=$DISPLAY -v /Users/idownard/development/stashorizer:/data dymat/opencv python /data/mustache_maker.py')
                 mustache_maker.main()
 
-                annotated_image_exists = os.path.isfile('image_annotated.jpg')
+                annotated_image_exists = os.path.isfile('/root/stashorizer/image_annotated.jpg')
                 if annotated_image_exists:
                     reply_message = ".@%s %s" % (status.user.screen_name, "Nice stache! Please help me support mental health for men by donating to Movember > https://mobro.co/iandownard")
                     logger.info("Sending tweet: \"" + reply_message + "\"")
                     try:
-                        self.api.update_with_media('image_annotated.jpg', status=reply_message, in_reply_to_status_id=status.id)
+                        self.api.update_with_media('/root/stashorizer/image_annotated.jpg', status=reply_message, in_reply_to_status_id=status.id)
                     except:
                         raise
                     finally:
-                        os.remove('image_raw.jpg')
-                        os.remove('image_annotated.jpg')
+                        os.remove('/root/stashorizer/image_raw.jpg')
+                        os.remove('/root/stashorizer/image_annotated.jpg')
                 else:
                     logger.info("No nose detected.")
                     reply_message = "@%s %s" % (status.user.screen_name, "I can't find a face in your image! Please help me support mental health for men by donating to Movember > https://mobro.co/iandownard")
@@ -162,7 +162,7 @@ class SListener(StreamListener):
                     except:
                         raise
                     finally:
-                        os.remove('image_raw.jpg')
+                        os.remove('/root/stashorizer/image_raw.jpg')
             else:
                 logger.debug("Failed to download image.")
 
