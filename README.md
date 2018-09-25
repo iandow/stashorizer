@@ -8,11 +8,12 @@ original tweet with that mustache annotated image.
 
 ```
 docker build -t stashorizer:latest .
+docker push iandow/stashorizer
 ```
 
 # USAGE:
 
-Define the following environment variables in `./env-file`:
+Define the following environment variables in `~/env-file`:
 
 ```
 TW_USERNAME=
@@ -28,5 +29,5 @@ GOOGLE_APPLICATION_CREDENTIALS=
 You'll need to link your Google Cloud certificate to container. I do that by coping my json cert file to `~/certs/` and mapping directory that to the container as a docker volume, like this:
 
 ```
-docker run --rm --env-file ./env-file --name stashorizer -v ~/certs/:/root/certs/ stashorizer:latest 
+docker run -it --rm --env-file ~/env-file --name stashorizer -v ~/certs/:/root/certs/ iandow/stashorizer:latest
 ```

@@ -146,7 +146,7 @@ class SListener(StreamListener):
 
                 annotated_image_exists = os.path.isfile('/root/stashorizer/image_annotated.jpg')
                 if annotated_image_exists:
-                    reply_message = ".@%s %s" % (status.user.screen_name, "Nice stache! Please help me support mental health for men by donating to Movember > https://mobro.co/iandownard")
+                    reply_message = ".@%s %s" % (status.user.screen_name, "Nice stache! Please help me support men's mental health by donating to #Movember at https://mobro.co/iandownard. Thanks!")
                     logger.info("Sending tweet: \"" + reply_message + "\"")
                     try:
                         self.api.update_with_media('/root/stashorizer/image_annotated.jpg', status=reply_message, in_reply_to_status_id=status.id)
