@@ -1,11 +1,11 @@
 FROM dymat/opencv:latest
 
-WORKDIR /root/
+WORKDIR /root/stashorizer
 RUN apt-get update && \
 	apt-get upgrade -y && \
 	apt-get install -y --no-install-recommends git python-setuptools && \
     git clone https://github.com/iandow/stashorizer && \
-    pip install -r stashorizer/requirements.txt
+    pip install -r /root/stashorizer/requirements.txt
 
 ENTRYPOINT ["python", "/root/stashorizer/streaming_mustache_bot.py"]
 
