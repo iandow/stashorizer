@@ -86,14 +86,15 @@ def detect_safe_search_uri(uri):
     logger.debug('violence: {}'.format(likelihood_name[safe.violence]))
     logger.debug('racy: {}'.format(likelihood_name[safe.racy]))
 
-    rollbar.report_message('image uri: {}'.format(uri))
-    rollbar.report_message('adult: {}'.format(likelihood_name[safe.adult]))
-    rollbar.report_message('medical: {}'.format(likelihood_name[safe.medical]))
-    rollbar.report_message('spoofed: {}'.format(likelihood_name[safe.spoof]))
-    rollbar.report_message('violence: {}'.format(likelihood_name[safe.violence]))
-    rollbar.report_message('racy: {}'.format(likelihood_name[safe.racy]))
-
     if safe.adult > 2 | safe.medical > 2 | safe.spoof > 2 | safe.violence > 2 | safe.racy > 2:
+        logger.error("Detected unsafe image " + uri)
+        rollbar.report_message("Detected unsafe image " + uri, 'error')
+        rollbar.report_message('image uri: {}'.format(uri), 'error')
+        rollbar.report_message('adult: {}'.format(likelihood_name[safe.adult]), 'error')
+        rollbar.report_message('medical: {}'.format(likelihood_name[safe.medical]), 'error')
+        rollbar.report_message('spoofed: {}'.format(likelihood_name[safe.spoof]), 'error')
+        rollbar.report_message('violence: {}'.format(likelihood_name[safe.violence]), 'error')
+        rollbar.report_message('racy: {}'.format(likelihood_name[safe.racy]), 'error')
         return False
     else:
         return True
@@ -117,7 +118,8 @@ class SListener(StreamListener):
             return
 
         # save tweet data to log
-        logger.info("Found mention: " + str(status.created_at) + ", " + str(status.id) + ", " + status.text)
+        logger.info("Found mention in tweet id " + str(status.id) + " from " + status.user.screen_name + " created at " + str(status.created_at), 'info')
+        rollbar.report_message("Found mention in tweet id " + str(status.id) + " from " + status.user.screen_name + " created at " + str(status.created_at), 'info')
         media = status.entities.get('media', [])
         received_tweet = {}
         received_tweet["id_str"] = status.id_str
@@ -127,30 +129,29 @@ class SListener(StreamListener):
         received_tweet["user_statuses_count"] = status.user.statuses_count
         received_tweet["user_location"] = status.user.location
         received_tweet["followers_count"] = status.user.followers_count
-        rollbar.report_message(json.dumps(received_tweet))
+        rollbar.report_message(json.dumps(received_tweet), 'info')
 
         if (len(media) > 0):
             logger.debug("Checking for unsafe features in image " + media[0]['media_url'])
             if detect_safe_search_uri(media[0]['media_url']) == False:
-                logger.debug("Detected unsafe image. " + media[0]['media_url'])
+                logger.error("Ignoring tweet with unsafe image " + media[0]['media_url'])
                 return
-            logger.info("downloading image " + media[0]['media_url'])
+            logger.info("Downloading image " + media[0]['media_url'])
             media_url = media[0]['media_url']
             wget.download(media_url, '/root/stashorizer/image_raw.jpg')
             raw_image_exists = os.path.isfile('/root/stashorizer/image_raw.jpg')
             if raw_image_exists:
                 logger.info("Applying mustache to image")
-
-                #os.system('docker run --rm -e ./.env -e DISPLAY=$DISPLAY -v /Users/idownard/development/stashorizer:/data dymat/opencv python /data/mustache_maker.py')
                 mustache_maker.main()
-
                 annotated_image_exists = os.path.isfile('/root/stashorizer/image_annotated.jpg')
                 if annotated_image_exists:
-                    reply_message = ".@%s %s" % (status.user.screen_name, "Nice stache! Please help me support men's mental health by donating to #Movember at https://mobro.co/iandownard. Thanks!")
+                    reply_message = ".@%s %s" % (status.user.screen_name, "Nice stache. Please help me support men's mental health by donating to #Movember, https://mobro.co/iandownard. Thanks!")
                     logger.info("Sending tweet: \"" + reply_message + "\"")
                     try:
                         self.api.update_with_media('/root/stashorizer/image_annotated.jpg', status=reply_message, in_reply_to_status_id=status.id)
                     except:
+                        logger.error("Failed to tweet mustache image")
+                        rollbar.report_message("Failed to tweet mustache image.", 'error')
                         raise
                     finally:
                         os.remove('/root/stashorizer/image_raw.jpg')
@@ -162,18 +163,25 @@ class SListener(StreamListener):
                     try:
                         self.api.update_status(status=reply_message, in_reply_to_status_id=status.id)
                     except:
+                        logger.error("Failed to tweet mustache image")
+                        rollbar.report_message("Failed to tweet mustache image.", 'error')
                         raise
                     finally:
                         os.remove('/root/stashorizer/image_raw.jpg')
             else:
-                logger.debug("Failed to download image.")
+                logger.error("Failed to download image.")
+                rollbar.report_message("Failed to download image.", 'error')
 
     def on_error(self, status_code):
+        logger.error("Stream listener threw error code " + str(status_code))
+        rollbar.report_message("Stream listener threw error code " + str(status_code))
         if status_code == 420:
             return False
 
     def on_timeout(self):
-        logger.error("Timeout, sleeping for 60 seconds...\n")
+        logger.error("Stream listener timeout.")
+        rollbar.report_message("Stream listener timeout.", 'error')
+        logger.debug("Sleeping for 60 seconds...\n")
         time.sleep(60)
         return
 
