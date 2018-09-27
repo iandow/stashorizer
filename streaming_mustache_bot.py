@@ -13,22 +13,28 @@
 #   [1] Safe Search Detection: https://cloud.google.com/vision/docs/detecting-safe-search#vision-safe-search-detection-python
 #   [2] Nose detection and mustache mask: https://sublimerobots.com/2015/02/dancing-mustaches/
 #
-# PRECONDITIONS: The following environment variables must be set:
-#   TW_USERNAME
-#   TW_CONSUMER_KEY
-#   TW_CONSUMER_SECRET
-#   TW_ACCESS_TOKEN
-#   TW_ACCESS_TOKEN_SECRET
-#   ROLLBAR_ACCESS_KEY
-#   GOOGLE_APPLICATION_CREDENTIALS
+# PRECONDITIONS: The following environment variables must be set (sample
+# values shown below, but don't use the keys and secrets, they won't work.
+# I just put them here so you know how the format looks):
+#
+#   TW_USERNAME=stashorizer
+#   TW_CONSUMER_KEY=23e0d55913808d0b813c8dc08
+#   TW_CONSUMER_SECRET=08d0b81323e0d55913808d0b813c8dc0808d0b81308d0b8132
+#   TW_ACCESS_TOKEN=ad838460bfd641ab7f5-460bfd641ab7f5d76ed5adb91ADADX
+#   TW_ACCESS_TOKEN_SECRET=36530de11f9f657f0821356652448ce536530de11f9f6
+#   ROLLBAR_ACCESS_KEY=36530de11f9f657f0821356652448ce5
+#   GOOGLE_APPLICATION_CREDENTIALS=/root/certs/my-project-98793e12f.json
+#   DEBUG=False
+#   KAFKA_REST_URL='http://nodea:8082/topics/%2Fapps%2Fstashorizer%3Amentions'
 #
 # USAGE:
-#   Save environment variables to a .env file, then run this command:
+#   Save environment variables to a env-file, then run this command:
 #   `eval $(egrep -v '^#' .env | xargs) python streaming_mustache_bot.py`
 ###############################################################################
+
 import mustache_maker
 import rollbar, logging
-import os, wget, json, time
+import os, wget, json, time, base64, requests
 from tweepy.streaming import StreamListener
 from tweepy import API
 from tweepy import OAuthHandler
@@ -112,6 +118,26 @@ class SListener(StreamListener):
     def on_status(self, status):
         logging.info(status.text)
 
+        kafka_rest_url = os.environ.get('KAFKA_REST_URL')
+        if kafka_rest_url:
+            # Persist all the metadata in the @mention to MapR-ES
+            #url = 'http://nodea:8082/topics/%2Fapps%2Fstashorizer%3Amentions'
+            payload = '{"records":[{"value":"' + base64.b64encode(json.dumps(status._json)) + '"}]}'
+            headers = {'content-type': 'application/vnd.kafka.v1+json'}
+            try:
+                r = requests.post(kafka_rest_url, data=payload, headers=headers)
+            except requests.exceptions.Timeout:
+                logging.error("Kafka REST request timeout.")
+            except requests.exceptions.TooManyRedirects:
+                logging.error("Kafka REST URL is bad.")
+            except requests.exceptions.RequestException as e:
+                # catastrophic error. bail.
+                logging.error("Kafka REST request failed. " + e)
+
+            logging.debug("Kafka REST response status code " + str(r.status_code) + ": " + str(r.text))
+        else:
+            logging.warning("KAFKA_REST_URL undefined. Tweet won't be archived to stream.")
+
         # ignore retweets
         if hasattr(status, 'quoted_status') | hasattr(status, 'retweeted_status'):
             logger.debug("ignoring retweet")
@@ -142,7 +168,14 @@ class SListener(StreamListener):
             raw_image_exists = os.path.isfile('/root/stashorizer/image_raw.jpg')
             if raw_image_exists:
                 logger.info("Applying mustache to image")
+
+                # Use this docker run instead of mustache_make.main() in order to run this on a mac.
+                # This is the easiest way to run cv2 libraries on mac. --Ian
+                # os.system('docker run --rm -e ./.env -e DISPLAY=$DISPLAY -v /Users/idownard/development/stashorizer:/data dymat/opencv python /data/mustache_maker.py')
+
+                # Use this command if you're on linux, where `pip install cv2` actually works (unlike mac)!
                 mustache_maker.main()
+
                 annotated_image_exists = os.path.isfile('/root/stashorizer/image_annotated.jpg')
                 if annotated_image_exists:
                     reply_message = ".@%s %s" % (status.user.screen_name, "Nice stache. Please help me support men's mental health by donating to #Movember, https://mobro.co/iandownard. Thanks!")
@@ -176,6 +209,8 @@ class SListener(StreamListener):
         logger.error("Stream listener threw error code " + str(status_code))
         rollbar.report_message("Stream listener threw error code " + str(status_code))
         if status_code == 420:
+            logger.error("Stream listener is rate limited. Try restarting again.")
+            rollbar.report_message("Stream listener is rate limited. Try restarting again.")
             return False
 
     def on_timeout(self):
@@ -198,7 +233,7 @@ def main():
     auth = OAuthHandler(consumer_key, consumer_secret)
     auth.set_access_token(access_key, access_secret)
     stream_listener = SListener()
-    stream_listener.init(API(auth_handler=auth, retry_count=3))
+    stream_listener.init(API(auth_handler=auth, retry_count=10, retry_delay=5, retry_errors=5))
     stream = Stream(auth=auth, listener=stream_listener)
     stream.filter(track=['@'+username])
 
