@@ -6,7 +6,7 @@ This bot uses the following APIs:
 * [Tweepy](http://www.tweepy.org) - to interact with Twitter
 * [Google Cloud Vision](https://cloud.google.com/vision/docs/detecting-safe-search) - to check image safety
 * [Rollbar](https://rollbar.com) - for logging and error monitoring
-* [MapR](https://mapr.com/) - for archiving Twitter activity
+* [MapR](https://mapr.com/) - for archiving Twitter activity and replicating tweets to Mastodon ([botsin.space](http://botsin.space))
 
 # BUILD
 
