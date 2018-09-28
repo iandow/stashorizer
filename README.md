@@ -1,7 +1,7 @@
 
 [Stashorizer](https://twitter.com/stashorizer) is a bot that automatically downloads images from tweets in which its name is mentioned in. If the image passes a safety check for adult content, violence, etc. then the bot will attempt to find faces in the image and draw mustaches on each face. The bot will then reply with a mustache drawn over the original image. Hopefully the mustache will appear below the nose but often it will appear somewhere else. The nose detection is somewhat unreliable.
 
-<a href="https://iandow.github.io/image/screenshot.png"><img src="https://iandow.github.io/image/screenshot.png" width="33%" align="right"></a> 
+<a href="https://github.com/iandow/stashorizer/blob/master/images/screenshot.png?raw=true"><img src="https://github.com/iandow/stashorizer/blob/master/images/screenshot.png?raw=true" width="33%" align="right"></a> 
 
 This bot uses the following APIs:
 
