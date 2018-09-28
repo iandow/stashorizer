@@ -37,7 +37,7 @@ KAFKA_REST_URL=
 DEBUG=
 ```
 
-Here's what an example env-file might look like. The keys and secrets shown below are fake.
+Here's what an example `env-file` might look like. The keys and secrets shown below are fake.
 I just put them here so you know how the format looks:
 
 ```
