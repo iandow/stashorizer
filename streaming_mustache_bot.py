@@ -25,7 +25,7 @@
 #   ROLLBAR_ACCESS_KEY=36530de11f9f657f0821356652448ce5
 #   GOOGLE_APPLICATION_CREDENTIALS=/root/certs/my-project-98793e12f.json
 #   DEBUG=False
-#   KAFKA_REST_URL='http://nodea:8082/topics/%2Fapps%2Fstashorizer%3Amentions'
+#   KAFKA_REST_URL=http://nodea:8082/topics/%2Fapps%2Fstashorizer%3Amentions
 #
 # USAGE:
 #   Save environment variables to a env-file, then run this command:
