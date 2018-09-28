@@ -38,7 +38,7 @@ DEBUG=
 ```
 
 Here's what an example `env-file` might look like. The keys and secrets shown below are fake.
-I just put them here so you know how the format looks:
+I just put them here so you know how the format should look:
 
 ```
 TW_USERNAME=stashorizer
@@ -52,7 +52,7 @@ DEBUG=False
 KAFKA_REST_URL=http://nodea:8082/topics/%2Fapps%2Fstashorizer%3Amentions
 ```
 
-You'll need to link your Google Cloud certificate to container. I do that by coping my json cert file to `~/certs/` and mapping directory that to the container as a docker volume, like this:
+You'll need to link your Google Cloud certificate to container. I do that by copying my json cert file to `~/certs/` and mapping directory that to the container as a docker volume, like this:
 
 ```
 docker pull iandow/stashorizer
@@ -61,9 +61,9 @@ docker run -it --rm --env-file ~/env-file --name stashorizer -v ~/certs/:/root/c
 
 # Tweet storage in MapR
 
-The Twitter stream listener in streaming_mustache_bot.py will persist every received mention to a topic in [MapR Event Streams](https://mapr.com/products/mapr-streams/) using a Kafka REST service running on a MapR cluster node. This ensures that all @stashorizer mentions will be saved even if they're deleted from Twitter or if Twitter disables the bot account. This stream also enables us to replicate the bot elsewhere, such as Mastodon (e.g. []botsin.space](http://botsin.space)) or Slack.
+The Twitter stream listener in streaming_mustache_bot.py will persist every received mention to a topic in [MapR Event Streams](https://mapr.com/products/mapr-streams/) using a Kafka REST service running on a MapR cluster node. This ensures that all @stashorizer mentions will be saved even if they're deleted from Twitter or if Twitter disables the bot account. This stream also enables us to replicate the bot elsewhere, such as Mastodon (e.g. []botsin.space](http://botsin.space)).
 
-To do enable tweet storage to MapR, do the following two things:
+To do enable tweet storage to MapR, do the following:
 
 * Define the `KAFKA_REST_URL` environment variable to point to the Kafka REST service running on a MapR server.
 * Create MapR-ES stream with public write permissions and a TTL of 0 (meaning data is never purged):
@@ -77,13 +77,13 @@ maprcli stream topic create -path /apps/stashorizer -topic mentions -partitions 
 maprcli stream edit -path /apps/stashorizer -produceperm p -consumeperm p -topicperm p --ttl 0
 ```
 
-Validate that you can produce a message, like this:
+* Validate that you can produce a message, like this:
 
 ```
 echo "hello world" | base64 | xargs -I {} curl -X POST -H "Content-Type: application/vnd.kafka.v1+json" --data '{"records":[{"value":"{}"}]}' "http://nodea:8082/topics/%2Fapps%2Fstashorizer%3Amentions"
 ```
 
-Validate that you can read from the stream using the kafka console consumer, like this:
+* Validate that you can read from the stream using the kafka console consumer, like this:
 
 ```
 /opt/mapr/kafka/kafka-1.0.1/bin/kafka-console-consumer.sh --topic /apps/stashorizer:mentions --new-consumer --bootstrap-server this.will.be.ignored:9092 --from-beginning
