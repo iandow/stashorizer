@@ -34,7 +34,7 @@ GOOGLE_APPLICATION_CREDENTIALS=
 *Optional:*
 ```
 KAFKA_REST_URL=
-DEBUG=False
+DEBUG=
 ```
 
 Here's what an example env-file might look like. The keys and secrets shown below are fake.
