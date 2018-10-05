@@ -89,4 +89,42 @@ echo "hello world" | base64 | xargs -I {} curl -X POST -H "Content-Type: applica
 /opt/mapr/kafka/kafka-1.0.1/bin/kafka-console-consumer.sh --topic /apps/stashorizer:mentions --new-consumer --bootstrap-server this.will.be.ignored:9092 --from-beginning
 ```
 
+# Continuous Delivery with WebHooks
+
+I automatically restart docker images when their image has been updated on the Docker hub. To do that, I configure a webhook on the docker repo. Here's how to do this with [ngrok](https://ngrok.com) and the [webhook](https://github.com/adnanh/webhook) tool from Adnan Hajdarević:
+
+Run the following commands on the server(s) running the twitter bot:
+
+```
+ngrok http 4567
+```
+
+Update the web hook URL on Docker Hub with whatever ngrok outputs. Then run a webhook listener like this:
+
+```
+./webhook-linux-amd64/webhook -port 4567 -hooks hooks.json -verbose
+```
+
+hooks.json looks like this:
+
+```
+[
+  {
+    "id": "redeploy-webhook",
+    "execute-command": "/var/scripts/redeploy.sh",
+    "command-working-directory": "/var/webhook"
+  }
+]
+```
+
+/var/scripts/redeploy.sh looks like this:
+
+```
+#!/bin/sh
+docker pull iandow/stashorizer
+docker stop stashorizer
+docker rm stashorizer
+docker run -dit --restart unless-stopped --env-file ~/env-file --name stashorizer -v ~/certs/:/root/certs/ iandow/stashorizer:latest
+```
+
 
