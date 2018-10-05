@@ -56,7 +56,7 @@ You'll need to link your Google Cloud certificate to container. I do that by cop
 
 ```
 docker pull iandow/stashorizer
-docker run -it --rm --env-file ~/env-file --name stashorizer -v ~/certs/:/root/certs/ iandow/stashorizer:latest
+docker run -dit --restart unless-stopped --env-file ~/env-file --name stashorizer -v ~/certs/:/root/certs/ iandow/stashorizer:latest
 ```
 
 # Tweet storage in MapR
