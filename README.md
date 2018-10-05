@@ -91,7 +91,7 @@ echo "hello world" | base64 | xargs -I {} curl -X POST -H "Content-Type: applica
 
 # Continuous Delivery with WebHooks
 
-I automatically restart docker images when their image has been updated on the Docker hub. To do that, I configure a webhook on the docker repo. Here's how to do this with [ngrok](https://ngrok.com) and the [webhook](https://github.com/adnanh/webhook) tool from Adnan Hajdarević:
+I automatically restart docker containers for @stashorizer when I push new images to the [stashorizer repo on Docker hub](https://hub.docker.com/r/iandow/stashorizer). I accomplish this by using a webhook I created in said docker repo which sends push notifications to a public URL provided by [ngrok](https://ngrok.com) that tunnels into the [webhook](https://github.com/adnanh/webhook) tool I have running on my private twitter bot server.  Here are the commands I use for `ngrok` and `webhook`:
 
 Run the following commands on the server(s) running the twitter bot:
 
