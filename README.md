@@ -88,3 +88,5 @@ echo "hello world" | base64 | xargs -I {} curl -X POST -H "Content-Type: applica
 ```
 /opt/mapr/kafka/kafka-1.0.1/bin/kafka-console-consumer.sh --topic /apps/stashorizer:mentions --new-consumer --bootstrap-server this.will.be.ignored:9092 --from-beginning
 ```
+
+
