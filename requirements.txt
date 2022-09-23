@@ -23,7 +23,7 @@ pandas==0.23.4
 pathos==0.2.2.1
 pox==0.2.4
 ppft==1.6.4.8
-protobuf==3.6.1
+protobuf==3.18.3
 pyasn1==0.4.4
 pyasn1-modules==0.2.2
 PySocks==1.6.8
